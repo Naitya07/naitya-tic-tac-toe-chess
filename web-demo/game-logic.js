@@ -608,29 +608,328 @@ function getEasyMove(gameState, aiPlayer) {
 function getMediumMove(gameState, aiPlayer) {
   const opponent = getOpponent(aiPlayer);
 
+  // Priority 1: Win if possible
   const winningMove = findWinningMove(gameState, aiPlayer);
   if (winningMove) {
     console.log('AI found winning move:', winningMove);
     return winningMove;
   }
 
+  // Priority 2: Block opponent's win
   const blockingMove = findWinningMove(gameState, opponent);
   if (blockingMove) {
     console.log('AI blocking opponent win:', blockingMove);
     return blockingMove;
   }
 
+  // Priority 3: Create threats (2 or 3 in a row)
+  const threatMove = findThreatCreatingMove(gameState, aiPlayer);
+  if (threatMove) {
+    console.log('AI creating threat:', threatMove);
+    return threatMove;
+  }
+
+  // Priority 4: Capture opponent's piece
   const captureMove = findCaptureMove(gameState, aiPlayer);
   if (captureMove) {
     console.log('AI capturing piece:', captureMove);
     return captureMove;
   }
 
+  // Priority 5: Control center
+  const centerMove = findCenterMove(gameState, aiPlayer);
+  if (centerMove) {
+    console.log('AI controlling center:', centerMove);
+    return centerMove;
+  }
+
+  // Priority 6: Random valid move
   return getEasyMove(gameState, aiPlayer);
 }
 
+function findThreatCreatingMove(gameState, player) {
+  const allActions = getAllPossibleActions(gameState, player);
+
+  let bestThreat = null;
+  let bestThreatScore = 0;
+
+  for (const action of allActions) {
+    const newState = simulateAction(gameState, action, player);
+    const threatScore = evaluatePotentialLines(newState, player);
+
+    if (threatScore > bestThreatScore) {
+      bestThreatScore = threatScore;
+      bestThreat = action;
+    }
+  }
+
+  // Only return if it creates a significant threat (at least 2 in a row)
+  return bestThreatScore >= 10 ? bestThreat : null;
+}
+
+function findCenterMove(gameState, player) {
+  const centerSquares = [
+    { row: 1, col: 1 }, { row: 1, col: 2 },
+    { row: 2, col: 1 }, { row: 2, col: 2 }
+  ];
+
+  const playerData = getPlayerData(gameState, player);
+  const availablePieces = [...playerData.pieces, ...playerData.captured];
+
+  // Try to place a piece in the center
+  for (const pieceType of availablePieces) {
+    for (const sq of centerSquares) {
+      const validation = isValidPlacement(gameState, player, pieceType, sq.row, sq.col);
+      if (validation.valid) {
+        return {
+          type: ACTION_TYPES.PLACE,
+          pieceType: pieceType,
+          row: sq.row,
+          col: sq.col
+        };
+      }
+    }
+  }
+
+  // Try to move a piece to the center
+  if (gameState.phase !== GAME_PHASES.PLACEMENT) {
+    for (const piece of playerData.onBoard) {
+      for (const sq of centerSquares) {
+        const validation = isValidMove(gameState, player, piece.row, piece.col, sq.row, sq.col);
+        if (validation.valid) {
+          return {
+            type: ACTION_TYPES.MOVE,
+            fromRow: piece.row,
+            fromCol: piece.col,
+            toRow: sq.row,
+            toCol: sq.col
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 function getHardMove(gameState, aiPlayer) {
+  const opponent = getOpponent(aiPlayer);
+
+  // First, check for immediate winning move
+  const winningMove = findWinningMove(gameState, aiPlayer);
+  if (winningMove) {
+    console.log('AI found winning move:', winningMove);
+    return winningMove;
+  }
+
+  // Then, check if we need to block opponent's win
+  const blockingMove = findWinningMove(gameState, opponent);
+  if (blockingMove) {
+    console.log('AI blocking opponent win:', blockingMove);
+    return blockingMove;
+  }
+
+  // Use minimax with depth 3 for strategic play
+  const bestMove = minimaxMove(gameState, aiPlayer, 3);
+  if (bestMove) {
+    console.log('AI using minimax strategy:', bestMove);
+    return bestMove;
+  }
+
+  // Fallback to medium difficulty
   return getMediumMove(gameState, aiPlayer);
+}
+
+// ============================================
+// MINIMAX AI WITH ALPHA-BETA PRUNING
+// ============================================
+function evaluateBoard(gameState, aiPlayer) {
+  const opponent = getOpponent(aiPlayer);
+
+  // Check if game is won
+  const winResult = checkWinner(gameState);
+  if (winResult.hasWinner) {
+    if (winResult.winner === aiPlayer) {
+      return 1000; // AI wins
+    } else {
+      return -1000; // Opponent wins
+    }
+  }
+
+  let score = 0;
+
+  // Evaluate piece count advantage
+  const aiData = getPlayerData(gameState, aiPlayer);
+  const oppData = getPlayerData(gameState, opponent);
+  score += (aiData.onBoard.length - oppData.onBoard.length) * 10;
+
+  // Evaluate potential winning lines (threat detection)
+  score += evaluatePotentialLines(gameState, aiPlayer) * 5;
+  score -= evaluatePotentialLines(gameState, opponent) * 5;
+
+  // Evaluate center control (center squares are more valuable)
+  score += evaluateCenterControl(gameState, aiPlayer) * 3;
+  score -= evaluateCenterControl(gameState, opponent) * 3;
+
+  // Evaluate piece mobility (more moves = better position)
+  const aiMoves = getAllPossibleActions(gameState, aiPlayer).length;
+  const oppMoves = getAllPossibleActions(gameState, opponent).length;
+  score += (aiMoves - oppMoves) * 0.5;
+
+  return score;
+}
+
+function evaluatePotentialLines(gameState, player) {
+  let threats = 0;
+
+  // Check all possible 4-in-a-row lines
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    threats += evaluateLine(gameState,
+      Array.from({ length: BOARD_SIZE }, (_, i) => ({ row, col: i })),
+      player
+    );
+  }
+
+  for (let col = 0; col < BOARD_SIZE; col++) {
+    threats += evaluateLine(gameState,
+      Array.from({ length: BOARD_SIZE }, (_, i) => ({ row: i, col })),
+      player
+    );
+  }
+
+  threats += evaluateLine(gameState,
+    Array.from({ length: BOARD_SIZE }, (_, i) => ({ row: i, col: i })),
+    player
+  );
+
+  threats += evaluateLine(gameState,
+    Array.from({ length: BOARD_SIZE }, (_, i) => ({ row: i, col: BOARD_SIZE - 1 - i })),
+    player
+  );
+
+  return threats;
+}
+
+function evaluateLine(gameState, positions, player) {
+  let playerCount = 0;
+  let opponentCount = 0;
+  const opponent = getOpponent(player);
+
+  for (const pos of positions) {
+    const piece = getPieceAt(gameState, pos.row, pos.col);
+    if (piece) {
+      if (piece.player === player) {
+        playerCount++;
+      } else if (piece.player === opponent) {
+        opponentCount++;
+      }
+    }
+  }
+
+  // If line has both players' pieces, it's not a threat
+  if (playerCount > 0 && opponentCount > 0) {
+    return 0;
+  }
+
+  // Score based on how many pieces in line
+  if (playerCount === 3) return 50; // 3 in a row - major threat
+  if (playerCount === 2) return 10; // 2 in a row - moderate threat
+  if (playerCount === 1) return 1;  // 1 in a row - minor potential
+
+  return 0;
+}
+
+function evaluateCenterControl(gameState, player) {
+  let centerScore = 0;
+  const centerSquares = [
+    { row: 1, col: 1 }, { row: 1, col: 2 },
+    { row: 2, col: 1 }, { row: 2, col: 2 }
+  ];
+
+  for (const sq of centerSquares) {
+    const piece = getPieceAt(gameState, sq.row, sq.col);
+    if (piece && piece.player === player) {
+      centerScore++;
+    }
+  }
+
+  return centerScore;
+}
+
+function minimaxMove(gameState, aiPlayer, maxDepth) {
+  let bestScore = -Infinity;
+  let bestMove = null;
+  const allActions = getAllPossibleActions(gameState, aiPlayer);
+
+  // Limit search space in early game to avoid timeout
+  const actionsToSearch = allActions.length > 30 ?
+    allActions.slice(0, 30) : allActions;
+
+  for (const action of actionsToSearch) {
+    const newState = simulateAction(gameState, action, aiPlayer);
+    const score = minimax(newState, maxDepth - 1, -Infinity, Infinity, false, aiPlayer);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = action;
+    }
+  }
+
+  console.log(`Minimax best score: ${bestScore}`);
+  return bestMove;
+}
+
+function minimax(gameState, depth, alpha, beta, isMaximizing, aiPlayer) {
+  // Terminal conditions
+  const winResult = checkWinner(gameState);
+  if (winResult.hasWinner) {
+    if (winResult.winner === aiPlayer) {
+      return 1000 + depth; // Prefer faster wins
+    } else {
+      return -1000 - depth; // Prefer slower losses
+    }
+  }
+
+  if (depth === 0) {
+    return evaluateBoard(gameState, aiPlayer);
+  }
+
+  const currentPlayer = isMaximizing ? aiPlayer : getOpponent(aiPlayer);
+  const allActions = getAllPossibleActions(gameState, currentPlayer);
+
+  if (allActions.length === 0) {
+    return 0; // Draw
+  }
+
+  // Limit branches to avoid timeout
+  const actionsToSearch = allActions.length > 20 ?
+    allActions.slice(0, 20) : allActions;
+
+  if (isMaximizing) {
+    let maxScore = -Infinity;
+    for (const action of actionsToSearch) {
+      const newState = simulateAction(gameState, action, currentPlayer);
+      const score = minimax(newState, depth - 1, alpha, beta, false, aiPlayer);
+      maxScore = Math.max(maxScore, score);
+      alpha = Math.max(alpha, score);
+      if (beta <= alpha) {
+        break; // Alpha-beta pruning
+      }
+    }
+    return maxScore;
+  } else {
+    let minScore = Infinity;
+    for (const action of actionsToSearch) {
+      const newState = simulateAction(gameState, action, currentPlayer);
+      const score = minimax(newState, depth - 1, alpha, beta, true, aiPlayer);
+      minScore = Math.min(minScore, score);
+      beta = Math.min(beta, score);
+      if (beta <= alpha) {
+        break; // Alpha-beta pruning
+      }
+    }
+    return minScore;
+  }
 }
 
 function findWinningMove(gameState, player) {
