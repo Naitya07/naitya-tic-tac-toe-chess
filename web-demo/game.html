@@ -109,6 +109,31 @@
             flex-direction: column;
             align-items: center;
             gap: 20px;
+            position: relative;
+        }
+
+        .board-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .board-coordinates {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .coord-row {
+            left: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .coord-col {
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .board {
@@ -566,7 +591,9 @@
             </div>
 
             <div class="board-container">
-                <div class="board" id="board"></div>
+                <div class="board-wrapper">
+                    <div class="board" id="board"></div>
+                </div>
             </div>
 
             <div class="sidebar">
@@ -788,6 +815,18 @@
                     square.dataset.row = row;
                     square.dataset.col = col;
                     square.onclick = () => handleSquareClick(row, col);
+
+                    // Add coordinate label for debugging
+                    const coordLabel = document.createElement('span');
+                    coordLabel.style.position = 'absolute';
+                    coordLabel.style.top = '2px';
+                    coordLabel.style.left = '2px';
+                    coordLabel.style.fontSize = '0.6rem';
+                    coordLabel.style.color = 'rgba(255,255,255,0.3)';
+                    coordLabel.style.pointerEvents = 'none';
+                    coordLabel.textContent = `${row},${col}`;
+                    square.appendChild(coordLabel);
+
                     board.appendChild(square);
                 }
             }
