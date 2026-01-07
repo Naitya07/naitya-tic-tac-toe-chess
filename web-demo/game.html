@@ -359,6 +359,22 @@
         @media (max-width: 1024px) {
             .game-container {
                 grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            /* Move board to center/top - it should be second after piece selector */
+            .board-container {
+                order: 1;
+            }
+
+            /* Piece selector first (most important for player) */
+            .sidebar:first-of-type {
+                order: 0;
+            }
+
+            /* Opponent pieces and info last */
+            .sidebar:last-of-type {
+                order: 2;
             }
 
             .board {
@@ -384,13 +400,13 @@
                 gap: 10px;
             }
 
-            .sidebar {
-                order: -1;
-            }
-
             .piece-btn {
                 padding: 12px;
                 font-size: 1.8rem;
+            }
+
+            .move-history {
+                max-height: 150px;
             }
         }
 
@@ -399,26 +415,57 @@
                 padding: 10px;
             }
 
+            .container {
+                padding: 0;
+            }
+
+            .header {
+                margin-bottom: 15px;
+            }
+
+            .game-info {
+                margin-bottom: 15px;
+                padding: 10px;
+            }
+
             .board {
-                grid-template-columns: repeat(4, 60px);
-                grid-template-rows: repeat(4, 60px);
+                grid-template-columns: repeat(4, 65px);
+                grid-template-rows: repeat(4, 65px);
                 gap: 4px;
                 padding: 8px;
             }
 
             .square {
-                width: 60px;
-                height: 60px;
-                font-size: 1.8rem;
+                width: 65px;
+                height: 65px;
+                font-size: 2rem;
             }
 
             h1 {
-                font-size: 1rem;
+                font-size: 1.1rem;
             }
 
             .piece-btn {
                 padding: 10px;
-                font-size: 1.5rem;
+                font-size: 1.6rem;
+            }
+
+            .sidebar {
+                padding: 15px;
+            }
+
+            .move-history {
+                max-height: 120px;
+            }
+
+            .room-code-banner {
+                padding: 10px 15px;
+                margin-bottom: 15px;
+            }
+
+            .room-code-banner .code {
+                font-size: 1.4rem;
+                letter-spacing: 3px;
             }
         }
 
@@ -645,38 +692,27 @@
         function updateYourPieceSymbols(player) {
             const pieceButtons = document.querySelectorAll('#pieceSelector .piece-btn');
             if (player === 'player2') {
-                // Red pieces for guest
+                // Red pieces for guest - same symbols, different color
                 pieceButtons.forEach(btn => btn.classList.add('red-pieces'));
-                pieceButtons[0].textContent = '♟'; // pawn
-                pieceButtons[1].textContent = '♜'; // rook
-                pieceButtons[2].textContent = '♞'; // knight
-                pieceButtons[3].textContent = '♝'; // bishop
             } else {
-                // Blue pieces for host (default)
+                // Blue pieces for host - same symbols, different color
                 pieceButtons.forEach(btn => btn.classList.remove('red-pieces'));
-                pieceButtons[0].textContent = '♙'; // pawn
-                pieceButtons[1].textContent = '♖'; // rook
-                pieceButtons[2].textContent = '♘'; // knight
-                pieceButtons[3].textContent = '♗'; // bishop
             }
+            // Both players use same piece symbols
+            pieceButtons[0].textContent = '♟'; // pawn
+            pieceButtons[1].textContent = '♜'; // rook
+            pieceButtons[2].textContent = '♞'; // knight
+            pieceButtons[3].textContent = '♝'; // bishop
         }
 
         // Update opponent piece symbols based on player
         function updateOpponentPieceSymbols(player) {
             const opponentButtons = document.querySelectorAll('#opponentPieceSelector .piece-btn');
-            if (player === 'player2') {
-                // Red pieces
-                opponentButtons[0].textContent = '♟'; // pawn
-                opponentButtons[1].textContent = '♜'; // rook
-                opponentButtons[2].textContent = '♞'; // knight
-                opponentButtons[3].textContent = '♝'; // bishop
-            } else {
-                // Blue pieces
-                opponentButtons[0].textContent = '♙'; // pawn
-                opponentButtons[1].textContent = '♖'; // rook
-                opponentButtons[2].textContent = '♘'; // knight
-                opponentButtons[3].textContent = '♗'; // bishop
-            }
+            // Both players use same piece symbols
+            opponentButtons[0].textContent = '♟'; // pawn
+            opponentButtons[1].textContent = '♜'; // rook
+            opponentButtons[2].textContent = '♞'; // knight
+            opponentButtons[3].textContent = '♝'; // bishop
         }
 
         // Initialize game
@@ -916,10 +952,12 @@
 
         // Update piece selector
         function updatePieceSelector() {
-            const playerData = getPlayerData(gameState, 'player1');
+            // In multiplayer, use myPlayer; in single player, use current player for AI mode
+            const playerToCheck = isMultiplayer ? myPlayer : 'player1';
+            const playerData = getPlayerData(gameState, playerToCheck);
             const availablePieces = [...playerData.pieces, ...playerData.captured];
 
-            document.querySelectorAll('.piece-btn').forEach(btn => {
+            document.querySelectorAll('#pieceSelector .piece-btn').forEach(btn => {
                 const pieceType = btn.dataset.piece;
                 if (availablePieces.includes(pieceType)) {
                     btn.disabled = false;
