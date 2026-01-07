@@ -1,0 +1,24 @@
+{
+  "name": "naitya-tic-tac-toe-chess",
+  "version": "1.0.0",
+  "description": "Chess meets Tic-Tac-Toe - A strategic multiplayer board game",
+  "main": "simple-server.js",
+  "scripts": {
+    "start": "node simple-server.js",
+    "dev": "node simple-server.js"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "keywords": [
+    "game",
+    "chess",
+    "tic-tac-toe",
+    "multiplayer",
+    "board-game"
+  ],
+  "author": "Naitya",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {}
+}

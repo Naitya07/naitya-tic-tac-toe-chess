@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naitya Tic Tac Toe Chess</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #2196F3, #64B5F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 40px;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .menu-button {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            border: none;
+            padding: 25px 30px;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .menu-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.5);
+        }
+
+        .menu-button.secondary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .menu-button.secondary:hover {
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .menu-button.tertiary {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .menu-button.tertiary:hover {
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.5);
+        }
+
+        .menu-button.info {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+        }
+
+        .menu-button.info:hover {
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.5);
+        }
+
+        .icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .status h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #64B5F6;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .status-item.pending {
+            border-left-color: #FF9800;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .footer {
+            margin-top: 60px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 60%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: width 0.3s ease;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e1e2e;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            color: #2196F3;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .close-btn {
+            background: #2196F3;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .close-btn:hover {
+            background: #1976D2;
+        }
+
+        .user-profile {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #2196F3;
+        }
+
+        .user-profile .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2196F3, #64B5F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .user-profile .username {
+            font-weight: 600;
+            color: #64B5F6;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #aaa;
+            text-align: left;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid #2196F3;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-align: center;
+        }
+
+        .input-group input::placeholder {
+            color: #777;
+            letter-spacing: normal;
+            text-transform: none;
+        }
+
+        .room-code-display {
+            background: rgba(33, 150, 243, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #2196F3;
+        }
+
+        .room-code {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 5px;
+            color: #64B5F6;
+            margin: 10px 0;
+        }
+
+        .copy-btn {
+            background: #4CAF50;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #45a049;
+        }
+
+        .google-btn {
+            background: white;
+            color: #333;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .google-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .waiting-status {
+            background: rgba(255, 152, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px solid #FF9800;
+            color: #FFB74D;
+        }
+    </style>
+</head>
+<body>
+    <!-- User Profile -->
+    <div class="user-profile" id="userProfile" style="display: none;">
+        <div class="avatar" id="userAvatar">👤</div>
+        <div class="username" id="username">Loading...</div>
+    </div>
+
+    <div class="container">
+        <h1>🎮 Naitya Tic Tac Toe Chess ♟️</h1>
+        <p class="subtitle">Chess Meets Tic-Tac-Toe</p>
+
+        <div class="menu">
+            <button class="menu-button" onclick="location.href='game.html'">
+                <span class="icon">🤖</span>
+                Play vs AI
+            </button>
+            <button class="menu-button secondary" onclick="showCreateRoom()">
+                <span class="icon">🎮</span>
+                Create Room
+            </button>
+            <button class="menu-button secondary" onclick="showJoinRoom()">
+                <span class="icon">🔗</span>
+                Join Room
+            </button>
+            <button class="menu-button tertiary" onclick="showComingSoon('Leaderboard')">
+                <span class="icon">🏆</span>
+                Leaderboard
+            </button>
+            <button class="menu-button info" onclick="showRules()">
+                <span class="icon">ℹ️</span>
+                How to Play
+            </button>
+            <button class="menu-button" style="background: linear-gradient(135deg, #607D8B, #455A64);" onclick="showComingSoon('Settings')">
+                <span class="icon">⚙️</span>
+                Settings
+            </button>
+        </div>
+
+        <div class="status">
+            <h2>📊 Project Status</h2>
+            <div class="progress-bar">
+                <div class="progress-fill">60% Complete</div>
+            </div>
+
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">Game Logic</div>
+                    <div class="status-value">✅ Complete</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Backend Server</div>
+                    <div class="status-value">✅ Complete</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">AI Engine</div>
+                    <div class="status-value">✅ Complete</div>
+                </div>
+                <div class="status-item pending">
+                    <div class="status-label">Game Board UI</div>
+                    <div class="status-value">⚠️ In Progress</div>
+                </div>
+                <div class="status-item pending">
+                    <div class="status-label">Multiplayer UI</div>
+                    <div class="status-value">⚠️ Pending</div>
+                </div>
+                <div class="status-item pending">
+                    <div class="status-label">Animations</div>
+                    <div class="status-value">⚠️ Pending</div>
+                </div>
+            </div>
+        </div>
+
+        <p class="footer">Made with ❤️ by Naitya</p>
+    </div>
+
+    <!-- Rules Modal -->
+    <div class="modal" id="rulesModal">
+        <div class="modal-content">
+            <h2>🎯 How to Play</h2>
+
+            <h3 style="color: #64B5F6; margin-top: 20px;">Objective</h3>
+            <p>Get 4 of your pieces in a row (horizontal, vertical, or diagonal) on a 4×4 board.</p>
+
+            <h3 style="color: #64B5F6; margin-top: 20px;">Your Pieces</h3>
+            <p>Each player has 4 unique chess pieces:<br>
+            • 1 Pawn<br>
+            • 1 Rook<br>
+            • 1 Knight<br>
+            • 1 Bishop</p>
+
+            <h3 style="color: #64B5F6; margin-top: 20px;">Game Phases</h3>
+            <p><strong>Phase 1 (Rounds 1-3):</strong> Players alternate placing pieces on any empty square. No movement allowed yet.</p>
+            <p><strong>Phase 2 (Round 4+):</strong> On your turn, choose ONE action:<br>
+            • Place your 4th piece (or a captured piece) on any empty square<br>
+            • Move an existing piece using standard chess movement rules</p>
+
+            <h3 style="color: #64B5F6; margin-top: 20px;">Piece Movement</h3>
+            <p>• <strong>Pawn:</strong> Moves forward 1 square, sideways 1 square, or captures diagonally<br>
+            • <strong>Rook:</strong> Moves any number of squares horizontally or vertically<br>
+            • <strong>Bishop:</strong> Moves any number of squares diagonally<br>
+            • <strong>Knight:</strong> Moves in an "L" shape (2 squares + 1 square perpendicular)</p>
+
+            <h3 style="color: #64B5F6; margin-top: 20px;">Special Rules</h3>
+            <p>• <strong>Capturing:</strong> Opponent's piece is removed but can be re-placed later<br>
+            • <strong>Pawns:</strong> Reverse direction when reaching the opposite end (no promotion)<br>
+            • <strong>No Placement Captures:</strong> You cannot place a piece directly onto an opponent's piece</p>
+
+            <h3 style="color: #64B5F6; margin-top: 20px;">Winning</h3>
+            <p>First player to get 4 of their pieces in a row wins! If no legal moves exist, the game is a draw.</p>
+
+            <p style="background: rgba(33, 150, 243, 0.2); padding: 15px; border-radius: 8px; margin-top: 20px;">
+                <em>💡 Think of it as "Connect 4 with legs" — your pieces can walk around the board to form winning lines!</em>
+            </p>
+
+            <button class="close-btn" onclick="closeModal()">Got It!</button>
+        </div>
+    </div>
+
+    <!-- Coming Soon Modal -->
+    <div class="modal" id="comingSoonModal">
+        <div class="modal-content">
+            <h2>🚧 Coming Soon!</h2>
+            <p id="featureName" style="font-size: 1.2rem; color: #64B5F6;"></p>
+            <p>This feature is currently under development.</p>
+            <p><strong>Current Progress:</strong> 60% Complete</p>
+            <p><strong>What's Working:</strong></p>
+            <ul style="text-align: left; margin: 15px 0; line-height: 2;">
+                <li>✅ Complete game logic and rules</li>
+                <li>✅ AI opponent (Easy/Medium/Hard)</li>
+                <li>✅ Full backend server for multiplayer</li>
+                <li>✅ Mobile app structure</li>
+            </ul>
+            <p><strong>In Progress:</strong></p>
+            <ul style="text-align: left; margin: 15px 0; line-height: 2;">
+                <li>⚠️ Game board UI</li>
+                <li>⚠️ Multiplayer interface</li>
+                <li>⚠️ Win animations</li>
+            </ul>
+            <p style="margin-top: 20px;">Check back soon for updates!</p>
+            <button class="close-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Create Room Modal -->
+    <div class="modal" id="createRoomModal">
+        <div class="modal-content">
+            <h2>🎮 Create Game Room</h2>
+
+            <div class="room-code-display" id="roomCodeDisplay" style="display: none;">
+                <p style="color: #aaa; margin-bottom: 10px;">Your Room Code:</p>
+                <div class="room-code" id="roomCodeText">------</div>
+                <button class="copy-btn" onclick="copyRoomCode()">📋 Copy Code</button>
+                <p style="color: #aaa; margin-top: 15px; font-size: 0.9rem;">
+                    Share this code with your friend to let them join your game!
+                </p>
+            </div>
+
+            <div class="waiting-status" id="waitingStatus" style="display: none;">
+                <p>⏳ Waiting for opponent to join...</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Room Code: <span id="waitingRoomCode">------</span></p>
+            </div>
+
+            <button class="close-btn" id="createRoomBtn" onclick="createRoom()">Create Room</button>
+            <button class="close-btn" id="startGameBtn" onclick="startGame()" style="display: none; background: #4CAF50;">Start Game</button>
+            <button class="close-btn" onclick="closeModal()" style="background: #666; margin-left: 10px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Join Room Modal -->
+    <div class="modal" id="joinRoomModal">
+        <div class="modal-content">
+            <h2>🔗 Join Game Room</h2>
+
+            <div class="input-group">
+                <label>Enter Room Code:</label>
+                <input type="text" id="joinRoomCode" placeholder="Enter 6-character code" maxlength="6">
+            </div>
+
+            <p style="color: #aaa; font-size: 0.9rem; margin: 15px 0;">
+                Ask your friend for the 6-character room code they received when creating a game.
+            </p>
+
+            <button class="close-btn" onclick="joinRoom()">Join Room</button>
+            <button class="close-btn" onclick="closeModal()" style="background: #666; margin-left: 10px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2>👤 Sign In</h2>
+
+            <p style="color: #aaa; margin-bottom: 20px;">
+                Sign in to save your progress and compete on the leaderboard!
+            </p>
+
+            <button class="google-btn" onclick="signInWithGoogle()">
+                <span style="font-size: 1.5rem;">G</span>
+                Sign in with Google
+            </button>
+
+            <p style="color: #777; margin-top: 20px; font-size: 0.9rem;">
+                Or continue as guest (current mode)
+            </p>
+
+            <button class="close-btn" onclick="closeModal()" style="margin-top: 20px;">Continue as Guest</button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const API_URL = CONFIG.getAPIURL(); // Auto-detect based on environment
+
+        // ============================================
+        // USER MANAGEMENT
+        // ============================================
+        let guestId = null;
+        let username = null;
+        let currentRoomCode = null;
+
+        // Get or create guest ID
+        function getGuestId() {
+            let storedId = localStorage.getItem('guestId');
+            if (!storedId) {
+                storedId = 'guest_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                localStorage.setItem('guestId', storedId);
+            }
+            return storedId;
+        }
+
+        // Get or create username
+        function getUsername() {
+            let storedName = localStorage.getItem('username');
+            if (!storedName) {
+                storedName = 'Guest_' + Math.random().toString(36).substring(2, 7).toUpperCase();
+                localStorage.setItem('username', storedName);
+            }
+            return storedName;
+        }
+
+        // Initialize user on page load
+        function initUser() {
+            guestId = getGuestId();
+            username = getUsername();
+
+            console.log('🎮 Guest ID:', guestId);
+            console.log('👤 Username:', username);
+
+            // Display user profile
+            document.getElementById('userProfile').style.display = 'flex';
+            document.getElementById('username').textContent = username;
+            document.getElementById('userAvatar').textContent = username.charAt(0);
+        }
+
+        // ============================================
+        // MODAL MANAGEMENT
+        // ============================================
+        function showRules() {
+            document.getElementById('rulesModal').classList.add('active');
+        }
+
+        function showComingSoon(feature) {
+            document.getElementById('featureName').textContent = feature;
+            document.getElementById('comingSoonModal').classList.add('active');
+        }
+
+        function showCreateRoom() {
+            document.getElementById('createRoomModal').classList.add('active');
+        }
+
+        function showJoinRoom() {
+            document.getElementById('joinRoomModal').classList.add('active');
+        }
+
+        function showLogin() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+            // Reset room creation UI
+            document.getElementById('roomCodeDisplay').style.display = 'none';
+            document.getElementById('waitingStatus').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+
+        // ============================================
+        // ROOM MANAGEMENT
+        // ============================================
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        async function createRoom() {
+            // Generate room code
+            currentRoomCode = generateRoomCode();
+
+            console.log('🎮 Creating room:', currentRoomCode);
+
+            // Show room code to user
+            document.getElementById('roomCodeText').textContent = currentRoomCode;
+            document.getElementById('roomCodeDisplay').style.display = 'block';
+            document.getElementById('waitingRoomCode').textContent = currentRoomCode;
+            document.getElementById('waitingStatus').style.display = 'block';
+
+            // Hide create button, show start game button
+            document.getElementById('createRoomBtn').style.display = 'none';
+            document.getElementById('startGameBtn').style.display = 'inline-block';
+
+            try {
+                // Send room to server for cross-device access
+                const response = await fetch(`${API_URL}/api/rooms/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: currentRoomCode,
+                        host: username,
+                        guestId: guestId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('✅ Room created on server:', currentRoomCode);
+
+                    // Also store locally for backup
+                    localStorage.setItem('currentRoom', JSON.stringify({
+                        code: currentRoomCode,
+                        host: username,
+                        guestId: guestId,
+                        createdAt: new Date().toISOString()
+                    }));
+
+                    console.log('📋 Share this code with your friend:', currentRoomCode);
+                } else {
+                    alert('Failed to create room on server. Please try again.');
+                    document.getElementById('createRoomBtn').style.display = '';
+                    document.getElementById('startGameBtn').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('❌ Server error:', error);
+                alert('Could not connect to room server. Make sure it is running!\n\nFalling back to local-only mode...');
+
+                // Fallback to localStorage only
+                localStorage.setItem('currentRoom', JSON.stringify({
+                    code: currentRoomCode,
+                    host: username,
+                    guestId: guestId,
+                    createdAt: new Date().toISOString()
+                }));
+            }
+        }
+
+        function startGame() {
+            if (currentRoomCode) {
+                location.href = `game.html?room=${currentRoomCode}&role=host`;
+            }
+        }
+
+        function copyRoomCode() {
+            const code = currentRoomCode || document.getElementById('roomCodeText').textContent;
+
+            // Create temporary input element
+            const tempInput = document.createElement('input');
+            tempInput.value = code;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            // Show feedback
+            const copyBtn = document.querySelector('.copy-btn');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '✅ Copied!';
+            copyBtn.style.background = '#4CAF50';
+
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.background = '';
+            }, 2000);
+
+            console.log('📋 Room code copied to clipboard:', code);
+        }
+
+        async function joinRoom() {
+            const code = document.getElementById('joinRoomCode').value.toUpperCase().trim();
+
+            if (code.length !== 6) {
+                alert('Please enter a valid 6-character room code');
+                return;
+            }
+
+            console.log('🔗 Attempting to join room:', code);
+
+            try {
+                // Check server first
+                const checkResponse = await fetch(`${API_URL}/api/rooms/check/${code}`);
+                const checkData = await checkResponse.json();
+
+                if (checkData.exists) {
+                    // Room found on server!
+                    const roomHost = checkData.room.host;
+                    console.log('✅ Room found on server! Host:', roomHost);
+
+                    // Join the room
+                    const joinResponse = await fetch(`${API_URL}/api/rooms/join`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            code: code,
+                            username: username,
+                            guestId: guestId
+                        })
+                    });
+
+                    const joinData = await joinResponse.json();
+
+                    if (joinData.success) {
+                        // Store join info locally
+                        localStorage.setItem('joinedRoom', JSON.stringify({
+                            code: code,
+                            joinedAs: username,
+                            guestId: guestId,
+                            joinedAt: new Date().toISOString()
+                        }));
+
+                        closeModal();
+
+                        // Redirect to game as guest/opponent
+                        alert(`Joining ${roomHost}'s game!`);
+                        location.href = `game.html?room=${code}&role=guest`;
+                        return;
+                    }
+                } else {
+                    // Not on server, check localStorage fallback
+                    const currentRoom = localStorage.getItem('currentRoom');
+                    if (currentRoom) {
+                        const room = JSON.parse(currentRoom);
+                        if (room.code === code) {
+                            console.log('✅ Room found in localStorage');
+                            localStorage.setItem('joinedRoom', JSON.stringify({
+                                code: code,
+                                joinedAs: username,
+                                guestId: guestId,
+                                joinedAt: new Date().toISOString()
+                            }));
+
+                            closeModal();
+                            alert(`Joining ${room.host}'s game!`);
+                            location.href = `game.html?room=${code}&role=guest`;
+                            return;
+                        }
+                    }
+                }
+
+                alert('❌ Room not found. Please check the code and try again.');
+                console.log('❌ Room not found:', code);
+
+            } catch (error) {
+                console.error('❌ Server error:', error);
+                alert('Could not connect to room server.\n\nFor cross-device play, make sure:\n1. Both devices are on the same WiFi\n2. The room server is running\n3. Your firewall allows connections');
+            }
+        }
+
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+        function signInWithGoogle() {
+            console.log('🔐 Google Sign-In clicked');
+            alert('🚧 Google Sign-In integration coming soon!\n\nFor now, you\'re playing as: ' + username);
+            // TODO: Implement Google OAuth
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        window.addEventListener('load', () => {
+            initUser();
+            console.log('✅ Page loaded and user initialized');
+        });
+
+        // Enable Enter key for joining room
+        document.addEventListener('DOMContentLoaded', () => {
+            const joinInput = document.getElementById('joinRoomCode');
+            if (joinInput) {
+                joinInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        joinRoom();
+                    }
+                });
+                // Auto-uppercase input
+                joinInput.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
