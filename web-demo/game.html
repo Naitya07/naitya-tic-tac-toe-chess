@@ -157,6 +157,11 @@
             transform: rotate(180deg);
         }
 
+        /* Counter-rotate coordinate labels so they're always readable */
+        .board.flipped .coord-label {
+            transform: rotate(180deg);
+        }
+
         .square {
             width: 100px;
             height: 100px;
@@ -808,6 +813,9 @@
             const board = document.getElementById('board');
             board.innerHTML = '';
 
+            // Column labels (a, b, c, d)
+            const colLabels = ['a', 'b', 'c', 'd'];
+
             for (let row = 0; row < 4; row++) {
                 for (let col = 0; col < 4; col++) {
                     const square = document.createElement('div');
@@ -816,15 +824,22 @@
                     square.dataset.col = col;
                     square.onclick = () => handleSquareClick(row, col);
 
-                    // Add coordinate label for debugging
+                    // Add chess-style coordinate label (e.g., "a1", "b2", "c3", "d4")
+                    // Row numbers go from 1 (top) to 4 (bottom) from Blue's perspective
+                    // For Red player (flipped board), they'll see it upside down which is correct
                     const coordLabel = document.createElement('span');
+                    coordLabel.className = 'coord-label';
                     coordLabel.style.position = 'absolute';
                     coordLabel.style.top = '2px';
                     coordLabel.style.left = '2px';
-                    coordLabel.style.fontSize = '0.6rem';
-                    coordLabel.style.color = 'rgba(255,255,255,0.3)';
+                    coordLabel.style.fontSize = '0.7rem';
+                    coordLabel.style.fontWeight = 'bold';
+                    coordLabel.style.color = 'rgba(255,255,255,0.4)';
                     coordLabel.style.pointerEvents = 'none';
-                    coordLabel.textContent = `${row},${col}`;
+
+                    // Chess notation: column letter + row number (from Blue's perspective, row 0 = row 1, row 3 = row 4)
+                    const chessNotation = `${colLabels[col]}${row + 1}`;
+                    coordLabel.textContent = chessNotation;
                     square.appendChild(coordLabel);
 
                     board.appendChild(square);
