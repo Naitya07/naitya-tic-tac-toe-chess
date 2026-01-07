@@ -1182,7 +1182,12 @@
 
         // Send move to server
         async function sendMoveToServer(action) {
-            if (!isMultiplayer || !roomCode) return;
+            if (!isMultiplayer || !roomCode) {
+                console.log('⚠️ Not sending move - not in multiplayer mode');
+                return;
+            }
+
+            console.log(`📤 Sending move to server as ${myPlayer}:`, action);
 
             try {
                 const response = await fetch(`${API_URL}/api/rooms/move`, {
@@ -1197,10 +1202,12 @@
 
                 const data = await response.json();
                 if (data.success) {
-                    console.log('✅ Move sent to server');
+                    console.log(`✅ Move sent to server successfully. Server move index: ${data.moveIndex}, Current myMoveIndex: ${myMoveIndex}`);
+                    // Update our move index to skip our own move when polling
                     myMoveIndex = data.moveIndex + 1;
+                    console.log(`📊 Updated myMoveIndex to ${myMoveIndex} (will poll from this index)`);
                 } else {
-                    console.error('❌ Failed to send move');
+                    console.error('❌ Failed to send move:', data);
                 }
             } catch (error) {
                 console.error('❌ Error sending move:', error);
@@ -1212,19 +1219,24 @@
             if (!isMultiplayer || !roomCode) return;
 
             try {
+                console.log(`🔍 Polling for moves from index ${myMoveIndex} in room ${roomCode}`);
                 const response = await fetch(`${API_URL}/api/rooms/moves/${roomCode}/${myMoveIndex}`);
                 const data = await response.json();
 
                 if (data.success && data.moves.length > 0) {
-                    console.log(`📥 Received ${data.moves.length} new moves from opponent`);
+                    console.log(`📥 Received ${data.moves.length} new moves. Current index on server: ${data.currentIndex}`);
+                    console.log('📋 Moves received:', data.moves);
 
                     for (const move of data.moves) {
+                        console.log(`🔎 Processing move from ${move.player} (I am ${myPlayer})`);
+
                         // Only apply moves from the opponent
                         if (move.player !== myPlayer) {
                             console.log('🎮 Applying opponent move:', move.action);
                             const result = executeAction(gameState, move.action);
 
                             if (result.success) {
+                                console.log('✅ Opponent move applied successfully');
                                 renderBoard();
                                 updateUI();
                                 updatePieceSelector();
@@ -1232,11 +1244,18 @@
                                 if (gameState.status !== 'in_progress') {
                                     checkGameEnd();
                                 }
+                            } else {
+                                console.error('❌ Failed to apply opponent move:', result.error);
                             }
+                        } else {
+                            console.log('⏭️ Skipping my own move');
                         }
                     }
 
                     myMoveIndex = data.currentIndex;
+                    console.log(`📊 Updated myMoveIndex to ${myMoveIndex}`);
+                } else if (data.success) {
+                    console.log('✨ No new moves');
                 }
             } catch (error) {
                 console.error('❌ Error checking for moves:', error);
