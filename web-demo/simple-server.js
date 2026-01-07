@@ -151,7 +151,9 @@ const server = http.createServer((req, res) => {
     }
 
     // Serve static files (HTML, CSS, JS)
-    let filePath = '.' + req.url;
+    // Parse URL to remove query parameters
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    let filePath = '.' + url.pathname;
     if (filePath === './') {
         filePath = './index.html';
     }
