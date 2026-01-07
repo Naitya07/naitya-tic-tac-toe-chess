@@ -30,12 +30,13 @@
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 1.5rem;
             background: linear-gradient(45deg, #2196F3, #64B5F6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 10px;
+            padding-top: 10px;
         }
 
         .game-info {
@@ -361,14 +362,63 @@
             }
 
             .board {
-                grid-template-columns: repeat(4, 80px);
-                grid-template-rows: repeat(4, 80px);
+                grid-template-columns: repeat(4, 70px);
+                grid-template-rows: repeat(4, 70px);
+                gap: 5px;
+                padding: 10px;
             }
 
             .square {
-                width: 80px;
-                height: 80px;
-                font-size: 2.5rem;
+                width: 70px;
+                height: 70px;
+                font-size: 2.2rem;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            .game-info {
+                flex-direction: column;
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .piece-btn {
+                padding: 12px;
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .board {
+                grid-template-columns: repeat(4, 60px);
+                grid-template-rows: repeat(4, 60px);
+                gap: 4px;
+                padding: 8px;
+            }
+
+            .square {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
+            }
+
+            h1 {
+                font-size: 1rem;
+            }
+
+            .piece-btn {
+                padding: 10px;
+                font-size: 1.5rem;
             }
         }
 
@@ -382,17 +432,17 @@
         }
 
         .back-btn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            display: inline-block;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid #2196F3;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 8px;
             color: white;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.2s;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
         }
 
         .back-btn:hover {
@@ -401,10 +451,9 @@
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-btn">← Back to Menu</a>
-
     <div class="container">
         <div class="header">
+            <a href="index.html" class="back-btn">← Back to Menu</a>
             <h1>🎮 Naitya Tic Tac Toe Chess ♟️</h1>
         </div>
 
@@ -735,11 +784,12 @@
 
         // Get piece symbol
         function getPieceSymbol(type, player) {
+            // Both players use the same piece symbols, differentiated by color
             const symbols = {
-                pawn: player === 'player1' ? '♙' : '♟',
-                rook: player === 'player1' ? '♖' : '♜',
-                knight: player === 'player1' ? '♘' : '♞',
-                bishop: player === 'player1' ? '♗' : '♝'
+                pawn: '♟',
+                rook: '♜',
+                knight: '♞',
+                bishop: '♝'
             };
             return symbols[type] || '?';
         }
