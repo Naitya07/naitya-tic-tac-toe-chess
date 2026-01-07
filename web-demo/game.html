@@ -774,9 +774,11 @@
                     document.getElementById('yourPiecesLabel').textContent = 'Your Pieces (Blue)';
                     document.getElementById('opponentPiecesLabel').textContent = 'Opponent Pieces (Red)';
                     updateOpponentPieceSymbols('player2');
+
+                    // Host: Send initial game state to server
+                    sendGameStateToServer();
                 } else {
                     myPlayer = 'player2'; // Guest is Red
-                    gameState = createGame('Opponent', username);
                     console.log('🎮 You are RED (Player 2 - Guest)');
 
                     // Update UI labels for guest - swap colors!
@@ -787,6 +789,9 @@
 
                     // Flip the board for Red player
                     document.getElementById('board').classList.add('flipped');
+
+                    // Guest: Fetch initial game state from server
+                    fetchGameStateFromServer();
                 }
 
                 // Start polling for opponent moves
@@ -1242,6 +1247,7 @@
             }
 
             console.log(`📤 Sending move to server as ${myPlayer}:`, action);
+            console.log(`📤 Sending game state:`, gameState);
 
             try {
                 const response = await fetch(`${API_URL}/api/rooms/move`, {
@@ -1250,13 +1256,14 @@
                     body: JSON.stringify({
                         roomCode: roomCode,
                         player: myPlayer,
-                        action: action
+                        action: action,
+                        gameState: gameState  // Send current game state to server
                     })
                 });
 
                 const data = await response.json();
                 if (data.success) {
-                    console.log(`✅ Move sent to server successfully. Server move index: ${data.moveIndex}, Current myMoveIndex: ${myMoveIndex}`);
+                    console.log(`✅ Move and game state sent to server successfully. Server move index: ${data.moveIndex}, Current myMoveIndex: ${myMoveIndex}`);
                     // Update our move index to skip our own move when polling
                     myMoveIndex = data.moveIndex + 1;
                     console.log(`📊 Updated myMoveIndex to ${myMoveIndex} (will poll from this index)`);
@@ -1281,28 +1288,45 @@
                     console.log(`📥 Received ${data.moves.length} new moves. Current index on server: ${data.currentIndex}`);
                     console.log('📋 Moves received:', data.moves);
 
-                    for (const move of data.moves) {
-                        console.log(`🔎 Processing move from ${move.player} (I am ${myPlayer})`);
+                    // CRITICAL FIX: Sync game state from server instead of applying individual moves
+                    if (data.gameState) {
+                        console.log('🔄 Syncing game state from server');
+                        gameState = data.gameState;
+                        console.log('✅ Game state synchronized:', gameState);
 
-                        // Only apply moves from the opponent
-                        if (move.player !== myPlayer) {
-                            console.log('🎮 Applying opponent move:', move.action);
-                            const result = executeAction(gameState, move.action);
+                        renderBoard();
+                        updateUI();
+                        updatePieceSelector();
 
-                            if (result.success) {
-                                console.log('✅ Opponent move applied successfully');
-                                renderBoard();
-                                updateUI();
-                                updatePieceSelector();
+                        if (gameState.status !== 'in_progress') {
+                            checkGameEnd();
+                        }
+                    } else {
+                        console.warn('⚠️ No game state received from server, falling back to move-by-move application');
+                        // Fallback: Apply moves individually (old method)
+                        for (const move of data.moves) {
+                            console.log(`🔎 Processing move from ${move.player} (I am ${myPlayer})`);
 
-                                if (gameState.status !== 'in_progress') {
-                                    checkGameEnd();
+                            // Only apply moves from the opponent
+                            if (move.player !== myPlayer) {
+                                console.log('🎮 Applying opponent move:', move.action);
+                                const result = executeAction(gameState, move.action);
+
+                                if (result.success) {
+                                    console.log('✅ Opponent move applied successfully');
+                                    renderBoard();
+                                    updateUI();
+                                    updatePieceSelector();
+
+                                    if (gameState.status !== 'in_progress') {
+                                        checkGameEnd();
+                                    }
+                                } else {
+                                    console.error('❌ Failed to apply opponent move:', result.error);
                                 }
                             } else {
-                                console.error('❌ Failed to apply opponent move:', result.error);
+                                console.log('⏭️ Skipping my own move');
                             }
-                        } else {
-                            console.log('⏭️ Skipping my own move');
                         }
                     }
 
@@ -1313,6 +1337,70 @@
                 }
             } catch (error) {
                 console.error('❌ Error checking for moves:', error);
+            }
+        }
+
+        // Send initial game state to server (Host only)
+        async function sendGameStateToServer() {
+            if (!isMultiplayer || !roomCode) return;
+
+            console.log('📤 Host sending initial game state to server');
+
+            try {
+                const response = await fetch(`${API_URL}/api/rooms/move`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        roomCode: roomCode,
+                        player: myPlayer,
+                        action: { type: 'init', message: 'Initial game state' },
+                        gameState: gameState
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('✅ Initial game state sent to server');
+                } else {
+                    console.error('❌ Failed to send initial game state');
+                }
+            } catch (error) {
+                console.error('❌ Error sending initial game state:', error);
+            }
+        }
+
+        // Fetch initial game state from server (Guest only)
+        async function fetchGameStateFromServer() {
+            if (!isMultiplayer || !roomCode) return;
+
+            console.log('📥 Guest fetching initial game state from server');
+
+            try {
+                const response = await fetch(`${API_URL}/api/rooms/moves/${roomCode}/0`);
+                const data = await response.json();
+
+                if (data.success && data.gameState) {
+                    console.log('✅ Initial game state fetched from server');
+                    gameState = data.gameState;
+                    console.log('🎮 Game state loaded:', gameState);
+
+                    renderBoard();
+                    updateUI();
+                    updatePieceSelector();
+                } else {
+                    console.warn('⚠️ No game state on server yet, using default');
+                    gameState = createGame('Opponent', username);
+                    renderBoard();
+                    updateUI();
+                    updatePieceSelector();
+                }
+            } catch (error) {
+                console.error('❌ Error fetching initial game state:', error);
+                // Fallback to default game state
+                gameState = createGame('Opponent', username);
+                renderBoard();
+                updateUI();
+                updatePieceSelector();
             }
         }
 

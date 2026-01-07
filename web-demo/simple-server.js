@@ -95,7 +95,13 @@ const server = http.createServer((req, res) => {
                 gameRooms[roomCode].moves.push(move);
                 gameRooms[roomCode].lastMoveTime = move.timestamp;
 
-                console.log('🎮 Move submitted in room', roomCode, 'by', data.player);
+                // Update server-side game state if provided
+                if (data.gameState) {
+                    gameRooms[roomCode].gameState = data.gameState;
+                    console.log('🎮 Move submitted and game state updated in room', roomCode, 'by', data.player);
+                } else {
+                    console.log('🎮 Move submitted in room', roomCode, 'by', data.player);
+                }
 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, moveIndex: gameRooms[roomCode].moves.length - 1 }));
@@ -120,7 +126,8 @@ const server = http.createServer((req, res) => {
             res.end(JSON.stringify({
                 success: true,
                 moves: newMoves,
-                currentIndex: gameRooms[roomCode].moves.length
+                currentIndex: gameRooms[roomCode].moves.length,
+                gameState: gameRooms[roomCode].gameState  // Include current game state
             }));
         } else {
             res.writeHead(404, { 'Content-Type': 'application/json' });
