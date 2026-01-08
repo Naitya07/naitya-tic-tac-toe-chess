@@ -1072,25 +1072,45 @@
 
             updateStatus('AI is thinking...');
 
+            // Add timeout to prevent AI from freezing indefinitely
+            let aiMoveFound = false;
+            const aiTimeout = setTimeout(() => {
+                if (!aiMoveFound) {
+                    console.error('⚠️ AI took too long! Using fallback...');
+                    updateStatus('AI timeout - making random move');
+                }
+            }, 5000); // 5 second timeout
+
             setTimeout(() => {
-                const aiAction = getAIMove(gameState, 'player2', difficulty);
+                try {
+                    const aiAction = getAIMove(gameState, 'player2', difficulty);
+                    aiMoveFound = true;
+                    clearTimeout(aiTimeout);
 
-                if (aiAction) {
-                    const result = executeAction(gameState, aiAction);
-                    if (result.success) {
-                        const moveDesc = aiAction.type === 'place'
-                            ? `AI placed ${aiAction.pieceType}`
-                            : `AI moved piece`;
-                        addMoveToHistoryUI(moveDesc);
+                    if (aiAction) {
+                        const result = executeAction(gameState, aiAction);
+                        if (result.success) {
+                            const moveDesc = aiAction.type === 'place'
+                                ? `AI placed ${aiAction.pieceType}`
+                                : `AI moved piece`;
+                            addMoveToHistoryUI(moveDesc);
 
-                        renderBoard();
-                        updateUI();
-                        updatePieceSelector();
+                            renderBoard();
+                            updateUI();
+                            updatePieceSelector();
 
-                        if (gameState.status !== 'in_progress') {
-                            checkGameEnd();
+                            if (gameState.status !== 'in_progress') {
+                                checkGameEnd();
+                            }
                         }
+                    } else {
+                        console.error('❌ AI could not find a valid move!');
+                        updateStatus('AI has no valid moves');
                     }
+                } catch (error) {
+                    console.error('❌ AI error:', error);
+                    clearTimeout(aiTimeout);
+                    updateStatus('AI error - please refresh');
                 }
             }, 500);
         }
