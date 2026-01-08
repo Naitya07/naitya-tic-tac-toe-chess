@@ -936,7 +936,20 @@ function findWinningMove(gameState, player) {
   const allActions = getAllPossibleActions(gameState, player);
   console.log(`Finding winning move for ${player}, checking ${allActions.length} actions`);
 
-  for (const action of allActions) {
+  // OPTIMIZATION: Limit search to prevent freezing
+  // Prioritize moves over placements (moves are more likely to create immediate wins)
+  const moveActions = allActions.filter(a => a.type === ACTION_TYPES.MOVE);
+  const placeActions = allActions.filter(a => a.type === ACTION_TYPES.PLACE);
+
+  // Check moves first (up to 30), then placements (up to 10)
+  const actionsToCheck = [
+    ...moveActions.slice(0, 30),
+    ...placeActions.slice(0, 10)
+  ];
+
+  console.log(`Optimized search: checking ${actionsToCheck.length} of ${allActions.length} actions`);
+
+  for (const action of actionsToCheck) {
     const newState = simulateAction(gameState, action, player);
     const winResult = checkWinner(newState);
 
@@ -946,7 +959,7 @@ function findWinningMove(gameState, player) {
     }
   }
 
-  console.log(`No winning move found for ${player}`);
+  console.log(`No winning move found for ${player} in ${actionsToCheck.length} checked actions`);
   return null;
 }
 
