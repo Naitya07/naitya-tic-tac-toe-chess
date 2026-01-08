@@ -165,14 +165,11 @@
         }
 
         /* Keep pieces upright when board is flipped */
-        .board.flipped .square {
+        .board.flipped .piece {
             transform: rotate(180deg);
         }
 
-        /* Counter-rotate coordinate labels so they're always readable */
-        .board.flipped .coord-label {
-            transform: rotate(180deg);
-        }
+        /* Coordinate labels stay in correct orientation (no counter-rotation needed) */
 
         .square {
             width: 100px;
