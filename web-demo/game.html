@@ -869,7 +869,19 @@
                 const col = parseInt(square.dataset.col);
                 const piece = getPieceAt(gameState, row, col);
 
+                // Clear inline styles from winning line highlight
+                square.style.backgroundColor = '';
+                square.style.boxShadow = '';
+                square.style.transform = '';
+                square.style.zIndex = '';
+
+                // Remove all children EXCEPT coordinate label
+                const coordLabel = square.querySelector('.coord-label');
                 square.innerHTML = '';
+                if (coordLabel) {
+                    square.appendChild(coordLabel);
+                }
+
                 square.className = 'square';
 
                 if (piece) {
