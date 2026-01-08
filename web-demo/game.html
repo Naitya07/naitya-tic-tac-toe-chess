@@ -216,29 +216,41 @@
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
             font-size: inherit;
             line-height: 1;
+            /* Force color rendering on all browsers including iOS */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         .player1-piece {
             color: #64B5F6 !important;
             text-shadow: 0 0 10px rgba(100, 181, 246, 0.5);
             -webkit-text-fill-color: #64B5F6 !important;
+            /* Additional iOS Safari fixes */
+            -webkit-text-stroke: 0.5px #64B5F6;
+            paint-order: stroke fill;
         }
 
         .player2-piece {
             color: #EF5350 !important;
             text-shadow: 0 0 10px rgba(239, 83, 80, 0.5);
             -webkit-text-fill-color: #EF5350 !important;
+            /* Additional iOS Safari fixes */
+            -webkit-text-stroke: 0.5px #EF5350;
+            paint-order: stroke fill;
         }
 
         /* Ensure flipped pieces keep their colors */
         .board.flipped .player1-piece {
             color: #64B5F6 !important;
             -webkit-text-fill-color: #64B5F6 !important;
+            -webkit-text-stroke: 0.5px #64B5F6;
         }
 
         .board.flipped .player2-piece {
             color: #EF5350 !important;
             -webkit-text-fill-color: #EF5350 !important;
+            -webkit-text-stroke: 0.5px #EF5350;
         }
 
         .sidebar {

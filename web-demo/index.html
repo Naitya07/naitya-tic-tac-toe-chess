@@ -340,6 +340,92 @@
             border: 2px solid #FF9800;
             color: #FFB74D;
         }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 8px;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+                margin-bottom: 25px;
+            }
+
+            .user-profile {
+                top: 10px;
+                right: 10px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .user-profile .avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            .menu {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin: 25px 0;
+            }
+
+            .menu-button {
+                padding: 20px;
+                font-size: 1rem;
+            }
+
+            .icon {
+                font-size: 1.5rem;
+            }
+
+            .status {
+                padding: 15px;
+            }
+
+            .status h2 {
+                font-size: 1.2rem;
+            }
+
+            .modal-content {
+                padding: 25px;
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.4rem;
+                line-height: 1.3;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+            }
+
+            .menu-button {
+                padding: 18px;
+                font-size: 0.95rem;
+            }
+
+            .user-profile {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 0 auto 20px;
+                max-width: max-content;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
