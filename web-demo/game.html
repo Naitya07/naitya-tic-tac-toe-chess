@@ -152,6 +152,18 @@
             transform: rotate(180deg);
         }
 
+        /* Coordinate labels on board squares */
+        .coord-label {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            z-index: 1;
+        }
+
         /* Keep pieces upright when board is flipped */
         .board.flipped .square {
             transform: rotate(180deg);
@@ -834,13 +846,6 @@
                     // For Red player (flipped board), they'll see it upside down which is correct
                     const coordLabel = document.createElement('span');
                     coordLabel.className = 'coord-label';
-                    coordLabel.style.position = 'absolute';
-                    coordLabel.style.top = '2px';
-                    coordLabel.style.left = '2px';
-                    coordLabel.style.fontSize = '0.7rem';
-                    coordLabel.style.fontWeight = 'bold';
-                    coordLabel.style.color = 'rgba(255,255,255,0.4)';
-                    coordLabel.style.pointerEvents = 'none';
 
                     // Chess notation: column letter + row number (from Blue's perspective, row 0 = row 1, row 3 = row 4)
                     const chessNotation = `${colLabels[col]}${row + 1}`;
