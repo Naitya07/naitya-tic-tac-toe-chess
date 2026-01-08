@@ -212,45 +212,54 @@
             opacity: 0.5;
         }
 
+        /* PIECE RENDERING - Chess symbols with colored backgrounds for iOS */
         .piece {
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-            font-size: inherit;
-            line-height: 1;
-            /* Force color rendering on all browsers including iOS */
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            color-adjust: exact;
+            width: 55px;
+            height: 55px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 2.5rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .player1-piece {
-            color: #64B5F6 !important;
-            text-shadow: 0 0 10px rgba(100, 181, 246, 0.5);
-            -webkit-text-fill-color: #64B5F6 !important;
-            /* Additional iOS Safari fixes */
-            -webkit-text-stroke: 0.5px #64B5F6;
-            paint-order: stroke fill;
+            background: linear-gradient(135deg, #2196F3 0%, #64B5F6 100%) !important;
+            color: white !important;
+            border: 3px solid #1976D2;
+            filter: drop-shadow(0 2px 6px rgba(33, 150, 243, 0.6));
         }
 
         .player2-piece {
-            color: #EF5350 !important;
-            text-shadow: 0 0 10px rgba(239, 83, 80, 0.5);
-            -webkit-text-fill-color: #EF5350 !important;
-            /* Additional iOS Safari fixes */
-            -webkit-text-stroke: 0.5px #EF5350;
-            paint-order: stroke fill;
+            background: linear-gradient(135deg, #E53935 0%, #EF5350 100%) !important;
+            color: white !important;
+            border: 3px solid #C62828;
+            filter: drop-shadow(0 2px 6px rgba(239, 83, 80, 0.6));
         }
 
         /* Ensure flipped pieces keep their colors */
         .board.flipped .player1-piece {
-            color: #64B5F6 !important;
-            -webkit-text-fill-color: #64B5F6 !important;
-            -webkit-text-stroke: 0.5px #64B5F6;
+            background: linear-gradient(135deg, #2196F3 0%, #64B5F6 100%) !important;
+            color: white !important;
+            border: 3px solid #1976D2;
+            filter: drop-shadow(0 2px 6px rgba(33, 150, 243, 0.6));
         }
 
         .board.flipped .player2-piece {
-            color: #EF5350 !important;
-            -webkit-text-fill-color: #EF5350 !important;
-            -webkit-text-stroke: 0.5px #EF5350;
+            background: linear-gradient(135deg, #E53935 0%, #EF5350 100%) !important;
+            color: white !important;
+            border: 3px solid #C62828;
+            filter: drop-shadow(0 2px 6px rgba(239, 83, 80, 0.6));
+        }
+
+        /* Add subtle animation on hover */
+        .piece:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s ease;
         }
 
         .sidebar {
@@ -277,9 +286,10 @@
             padding: 15px;
             border-radius: 10px;
             color: #64B5F6;
-            font-size: 2rem;
+            font-size: 2.5rem;
             cursor: pointer;
             transition: all 0.2s;
+            line-height: 1;
         }
 
         .piece-btn:hover {
@@ -626,10 +636,10 @@
             <div class="sidebar">
                 <h3 id="yourPiecesLabel">Your Pieces (Blue)</h3>
                 <div class="piece-selector" id="pieceSelector">
-                    <button class="piece-btn" data-piece="pawn">♙</button>
-                    <button class="piece-btn" data-piece="rook">♖</button>
-                    <button class="piece-btn" data-piece="knight">♘</button>
-                    <button class="piece-btn" data-piece="bishop">♗</button>
+                    <button class="piece-btn" data-piece="pawn">♟</button>
+                    <button class="piece-btn" data-piece="rook">♜</button>
+                    <button class="piece-btn" data-piece="knight">♞</button>
+                    <button class="piece-btn" data-piece="bishop">♝</button>
                 </div>
 
                 <h3>Actions</h3>
@@ -941,7 +951,7 @@
 
         // Get piece symbol
         function getPieceSymbol(type, player) {
-            // Both players use the same piece symbols, differentiated by color
+            // Both players use the same chess piece symbols
             const symbols = {
                 pawn: '♟',
                 rook: '♜',
