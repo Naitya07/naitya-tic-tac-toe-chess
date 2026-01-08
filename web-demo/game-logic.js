@@ -729,8 +729,8 @@ function getHardMove(gameState, aiPlayer) {
     return blockingMove;
   }
 
-  // Use minimax with depth 3 for strategic play
-  const bestMove = minimaxMove(gameState, aiPlayer, 3);
+  // Use minimax with depth 2 for strategic play (depth 3 is too slow)
+  const bestMove = minimaxMove(gameState, aiPlayer, 2);
   if (bestMove) {
     console.log('AI using minimax strategy:', bestMove);
     return bestMove;
@@ -861,9 +861,9 @@ function minimaxMove(gameState, aiPlayer, maxDepth) {
   let bestMove = null;
   const allActions = getAllPossibleActions(gameState, aiPlayer);
 
-  // Limit search space in early game to avoid timeout
-  const actionsToSearch = allActions.length > 30 ?
-    allActions.slice(0, 30) : allActions;
+  // Limit search space to avoid timeout
+  const actionsToSearch = allActions.length > 20 ?
+    allActions.slice(0, 20) : allActions;
 
   for (const action of actionsToSearch) {
     const newState = simulateAction(gameState, action, aiPlayer);
@@ -902,8 +902,8 @@ function minimax(gameState, depth, alpha, beta, isMaximizing, aiPlayer) {
   }
 
   // Limit branches to avoid timeout
-  const actionsToSearch = allActions.length > 20 ?
-    allActions.slice(0, 20) : allActions;
+  const actionsToSearch = allActions.length > 15 ?
+    allActions.slice(0, 15) : allActions;
 
   if (isMaximizing) {
     let maxScore = -Infinity;
